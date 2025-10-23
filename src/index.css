@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .transition-text {
+        transition: color 0.2s ease-in-out, text-decoration-color 0.2s ease-in-out;
+    }
+}

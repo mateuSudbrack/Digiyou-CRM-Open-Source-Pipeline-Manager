@@ -1,0 +1,5 @@
+{
+  "name": "DigiYou CRM - Pipeline Manager",
+  "description": "A modern CRM focused on a Kanban-style pipeline manager, inspired by ActiveCampaign. It allows for comprehensive management of funnels, stages, and deals, with dashboard analytics.",
+  "requestFramePermissions": []
+}

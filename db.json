@@ -1,0 +1,178 @@
+{
+  "pipelines": [
+    {
+      "id": "pipeline_1",
+      "name": "Sales Pipeline"
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage_1",
+      "name": "Lead In",
+      "pipelineId": "pipeline_1",
+      "order": 0
+    },
+    {
+      "id": "stage_2",
+      "name": "Contact Made",
+      "pipelineId": "pipeline_1",
+      "order": 1
+    },
+    {
+      "id": "stage_3",
+      "name": "Demo Scheduled",
+      "pipelineId": "pipeline_1",
+      "order": 2
+    },
+    {
+      "id": "stage_4",
+      "name": "Proposal Made",
+      "pipelineId": "pipeline_1",
+      "order": 3
+    },
+    {
+      "id": "stage_5",
+      "name": "Negotiations",
+      "pipelineId": "pipeline_1",
+      "order": 4
+    }
+  ],
+  "contacts": [
+    {
+      "id": "contato@exemplo.com",
+      "name": "Empresa Exemplo Ltda",
+      "email": "contato@exemplo.com",
+      "phones": [
+        "(11) 99999-8888"
+      ],
+      "classification": "CLIENT",
+      "observation": "Long-time client.",
+      "notes": [],
+      "history": [],
+      "customFields": {}
+    },
+    {
+      "id": "contato@solucoestech.com",
+      "name": "Soluções Tech",
+      "email": "contato@solucoestech.com",
+      "phones": [
+        "(21) 98877-6655",
+        "(21) 2345-6789"
+      ],
+      "classification": "PARTNER",
+      "observation": "",
+      "notes": [],
+      "history": [],
+      "customFields": {}
+    }
+  ],
+  "customFieldDefinitions": [
+    {
+      "id": "field_source",
+      "name": "Source"
+    },
+    {
+      "id": "field_urgency",
+      "name": "Urgency"
+    }
+  ],
+  "contactCustomFieldDefinitions": [
+    {
+      "id": "c_field_region",
+      "name": "Region"
+    }
+  ],
+  "deals": [
+    {
+      "id": "deal_1",
+      "name": "Website Redesign Project",
+      "value": 15000,
+      "contactId": "contato@exemplo.com",
+      "stageId": "stage_1",
+      "status": "OPEN",
+      "customFields": {
+        "field_source": "Web Referral"
+      },
+      "notes": [
+        {
+          "id": "note_1",
+          "content": "Initial call was positive.",
+          "createdAt": "2024-05-24T10:00:00.000Z"
+        }
+      ],
+      "history": [],
+      "observation": "Client needs a quick turnaround.",
+      "data_vencimento": "2024-06-03",
+      "createdAt": "2024-05-24T10:00:00.000Z",
+      "updatedAt": "2024-05-24T10:00:00.000Z"
+    },
+    {
+      "id": "deal_2",
+      "name": "Digital Marketing Campaign",
+      "value": 7500,
+      "contactId": "contato@exemplo.com",
+      "stageId": "stage_2",
+      "status": "OPEN",
+      "customFields": {},
+      "notes": [],
+      "history": [],
+      "observation": "",
+      "data_vencimento": "2024-06-18",
+      "createdAt": "2024-05-24T10:00:00.000Z",
+      "updatedAt": "2024-05-24T10:00:00.000Z"
+    },
+    {
+      "id": "deal_3",
+      "name": "E-commerce Platform",
+      "value": 45000,
+      "contactId": "contato@solucoestech.com",
+      "stageId": "stage_5",
+      "status": "WON",
+      "customFields": {},
+      "notes": [],
+      "history": [],
+      "observation": "Closed deal on Q2.",
+      "createdAt": "2024-05-24T10:00:00.000Z",
+      "updatedAt": "2024-05-24T10:00:00.000Z"
+    }
+  ],
+  "automations": [],
+  "apiKey": "api_key_id_1716550000000_randomstr",
+  "tasks": [
+    {
+      "id": "task_1",
+      "title": "Follow up with Empresa Exemplo",
+      "isCompleted": false,
+      "createdAt": "2024-05-24T10:00:00.000Z",
+      "dueDate": "2024-05-26"
+    },
+    {
+      "id": "task_2",
+      "title": "Prepare Q3 marketing proposal",
+      "isCompleted": true,
+      "createdAt": "2024-05-24T10:00:00.000Z"
+    },
+    {
+      "id": "task_3",
+      "title": "Schedule demo with Soluções Tech",
+      "isCompleted": false,
+      "createdAt": "2024-05-24T10:00:00.000Z",
+      "dueDate": "2024-05-31"
+    }
+  ],
+  "users": [
+    {
+      "username": "ADMIN",
+      "password": "1234"
+    }
+  ],
+  "calendarNotes": [
+    {
+      "id": "cal_note_1",
+      "title": "Team Meeting",
+      "content": "Discuss Q3 goals",
+      "date": "2024-05-27",
+      "createdAt": "2024-05-24T10:00:00.000Z"
+    }
+  ]
+}
