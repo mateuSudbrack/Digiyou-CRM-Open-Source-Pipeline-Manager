@@ -1264,6 +1264,7 @@ const createCrudEndpoints = (entityName, pluralEntityName, jsonFields = []) => {
 };
 
 createCrudEndpoints('Pipeline', 'pipelines');
+createCrudEndpoints('Stage', 'stages');
 
 
 createCrudEndpoints('Deal', 'deals', ['customFields', 'notes', 'history']);
