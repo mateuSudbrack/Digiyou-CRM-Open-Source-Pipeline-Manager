@@ -2,10 +2,19 @@
 
 This project is a modern CRM focused on a Kanban-style pipeline manager, inspired by ActiveCampaign. It allows for comprehensive management of funnels, stages, and deals, with dashboard analytics.
 
-## Project Structure
+## Key Functionalities
 
--   **Frontend**: The user interface is built with React, TypeScript, and TailwindCSS, powered by a Vite build environment. Source files are located in the `src/` directory.
--   **Backend**: A Node.js Express server that provides a REST API and persists data in a `crm.db` SQLite database file. The server logic is in `server.js`.
+*   **Pipeline Management**: Create and manage sales pipelines with customizable stages.
+*   **Deal Tracking**: Track deals through various stages, including value, contact, and status.
+*   **Contact Management**: Store and manage contact information, including custom fields and interaction history.
+*   **Automation Engine**: Set up automated actions based on deal or task events (e.g., send emails, create tasks, send webhooks, WhatsApp messages).
+*   **Email Templates**: Create and manage reusable email templates for automations.
+*   **Task Management**: Create and assign tasks, link them to deals or contacts, and track completion.
+*   **Calendar Notes**: Schedule and manage important notes and events.
+*   **User Management**: Add and remove users with access to the CRM.
+*   **Dashboard Analytics**: Visualize key performance indicators and deal distribution.
+*   **SMTP Integration**: Configure SMTP settings for sending emails, both system-wide and company-specific.
+*   **WhatsApp Integration (Evolution API)**: Connect with WhatsApp for automated messaging.
 
 ---
 
@@ -22,6 +31,27 @@ For development, you need to run the backend API server and the frontend develop
 -   Install dependencies:
     ```bash
     npm install
+    ```
+-   **Configure Environment Variables**: Create a `.env` file in the project root with the following (replace with your actual SMTP details):
+    ```
+    # Company-specific SMTP settings (can be overridden per company in CRM settings)
+    SMTP_HOST=your_smtp_host
+    SMTP_PORT=587
+    SMTP_SECURE=false
+    SMTP_USER=your_smtp_user
+    SMTP_PASS=your_smtp_password
+
+    # System-wide SMTP settings for registration, password reset, etc.
+    # These are used for core CRM functionalities and take precedence over SMTP_HOST/PORT/USER/PASS
+    SYSTEM_SMTP_HOST=your_system_smtp_host
+    SYSTEM_SMTP_PORT=587
+    SYSTEM_SMTP_SECURE=false
+    SYSTEM_SMTP_USER=your_system_smtp_user
+    SYSTEM_SMTP_PASS=your_system_smtp_password
+
+    # Other optional environment variables
+    # PORT=4029
+    # DB_FILE=crm.db
     ```
 -   Start the API server:
     ```bash
@@ -63,11 +93,30 @@ For a production environment, you should build the React application into static
     npm install
     ```
 
-**3. Configuration (Optional but Recommended):**
+**3. Configuration (Essential for Email Functionality):**
 
--   You can configure the server using environment variables. You can set them directly in your shell or use a `.env` file (you would need to add a library like `dotenv` to your project).
-    -   `PORT`: The port for the server to run on (defaults to `4029`).
-    -   `DB_FILE`: The path to the SQLite database file (defaults to `./crm.db`).
+-   **Environment Variables**: Create a `.env` file in the project root with the following (replace with your actual SMTP details):
+    ```
+    # Company-specific SMTP settings (can be overridden per company in CRM settings)
+    SMTP_HOST=your_smtp_host
+    SMTP_PORT=587
+    SMTP_SECURE=false
+    SMTP_USER=your_smtp_user
+    SMTP_PASS=your_smtp_password
+
+    # System-wide SMTP settings for registration, password reset, etc.
+    # These are used for core CRM functionalities and take precedence over SMTP_HOST/PORT/USER/PASS
+    SYSTEM_SMTP_HOST=your_system_smtp_host
+    SYSTEM_SMTP_PORT=587
+    SYSTEM_SMTP_SECURE=false
+    SYSTEM_SMTP_USER=your_system_smtp_user
+    SYSTEM_SMTP_PASS=your_system_smtp_password
+
+    # Other optional environment variables
+    # PORT=4029
+    # DB_FILE=crm.db
+    ```
+    **Important**: For production, it's highly recommended to set these environment variables directly in your hosting environment (e.g., using `export` commands, a `.env` file managed by your deployment process, or a secrets manager) rather than committing them to version control.
 
 **4. Build the Frontend:**
 
@@ -110,3 +159,35 @@ For a production environment, you should build the React application into static
     ```
 
 -   You can monitor your application with `pm2 list` or `pm2 monit`.
+
+---
+
+## Testing SMTP Configuration
+
+### Local Development
+
+1.  **Configure `.env`**: Ensure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` (for company-specific) and `SYSTEM_SMTP_HOST`, `SYSTEM_SMTP_PORT`, `SYSTEM_SMTP_SECURE`, `SYSTEM_SMTP_USER`, `SYSTEM_SMTP_PASS` (for system-wide) are correctly set in your `.env` file.
+2.  **Start Servers**: Run `npm start` (backend) and `npm run dev` (frontend).
+3.  **Test System SMTP**:
+    *   Navigate to the registration page (`/register`). Try to register a new user. If the system SMTP is configured correctly, you should receive a verification email.
+    *   Navigate to the forgot password page (`/forgot-password`). Enter an existing user's email. If configured correctly, you should receive a password reset email.
+4.  **Test Company-Specific SMTP**:
+    *   Log in to the CRM.
+    *   Go to "Settings" -> "Email (SMTP) Configuration".
+    *   The fields should be pre-filled from your `.env` `SMTP_` variables. You can modify them here if needed.
+    *   Enter a recipient email in the "Test Connection" section and click "Test". You should receive a test email.
+    *   Create an automation that sends an email and trigger it to verify.
+
+### Production Environment
+
+1.  **Configure Environment Variables**: Ensure `SYSTEM_SMTP_HOST`, `SYSTEM_SMTP_PORT`, `SYSTEM_SMTP_SECURE`, `SYSTEM_SMTP_USER`, `SYSTEM_SMTP_PASS` and `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` are set in your production environment.
+2.  **Deploy and Start**: Follow the "Production Deployment on Linux" steps to build and start your application.
+3.  **Test System SMTP**:
+    *   Access your deployed CRM's registration page. Register a new user to verify verification email delivery.
+    *   Use the forgot password functionality for an existing user to verify password reset email delivery.
+4.  **Test Company-Specific SMTP**:
+    *   Log in to the deployed CRM.
+    *   Navigate to "Settings" -> "Email (SMTP) Configuration".
+    *   Verify that the fields reflect the `SMTP_` environment variables set in production.
+    *   Send a test email from this section.
+    *   Trigger an email automation to confirm it works.
