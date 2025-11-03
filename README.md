@@ -162,6 +162,20 @@ For a production environment, you should build the React application into static
 
 ---
 
+## Screenshots
+
+### Login Page
+
+![Login Page](./.playwright-mcp/login-page.png)
+
+### Pipeline Page
+
+![Pipeline Page](./.playwright-mcp/pipeline-page.png)
+
+### Settings Page
+
+![Settings Page](./.playwright-mcp/settings-page.png)
+
 ## Testing SMTP Configuration
 
 ### Local Development
