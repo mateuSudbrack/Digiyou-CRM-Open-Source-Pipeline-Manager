@@ -1,207 +1,211 @@
-# DigiYou CRM - Pipeline Manager
+# DigiYou CRM - Gerenciador de Pipeline
 
-This project is a modern CRM focused on a Kanban-style pipeline manager, inspired by ActiveCampaign. It allows for comprehensive management of funnels, stages, and deals, with dashboard analytics.
-
-## Key Functionalities
-
-*   **Pipeline Management**: Create and manage sales pipelines with customizable stages.
-*   **Deal Tracking**: Track deals through various stages, including value, contact, and status.
-*   **Contact Management**: Store and manage contact information, including custom fields and interaction history.
-*   **Automation Engine**: Set up automated actions based on deal or task events (e.g., send emails, create tasks, send webhooks, WhatsApp messages).
-*   **Email Templates**: Create and manage reusable email templates for automations.
-*   **Task Management**: Create and assign tasks, link them to deals or contacts, and track completion.
-*   **Calendar Notes**: Schedule and manage important notes and events.
-*   **User Management**: Add and remove users with access to the CRM.
-*   **Dashboard Analytics**: Visualize key performance indicators and deal distribution.
-*   **SMTP Integration**: Configure SMTP settings for sending emails, both system-wide and company-specific.
-*   **WhatsApp Integration (Evolution API)**: Connect with WhatsApp for automated messaging.
+Este projeto é um CRM moderno focado em um gerenciador de pipeline estilo Kanban, inspirado no ActiveCampaign. Ele permite o gerenciamento abrangente de funis, etapas e negócios, com análises de painel.
 
 ---
 
-## Running the Application
+## Capturas de Tela
 
-There are two main ways to run this application: for development and for production.
+### Página de Login
 
-### Development
+![Página de Login](./.playwright-mcp/login-page.png)
 
-For development, you need to run the backend API server and the frontend development server in **two separate terminals**. This allows for features like hot-reloading on the frontend.
+### Página de Pipeline
 
-**1. Start the Backend Server:**
+![Página de Pipeline](./.playwright-mcp/pipeline-page.png)
 
--   Install dependencies:
+### Página de Configurações
+
+![Página de Configurações](./.playwright-mcp/settings-page.png)
+
+---
+
+## Funcionalidades Principais
+
+*   **Gerenciamento de Pipeline**: Crie e gerencie pipelines de vendas com etapas personalizáveis.
+*   **Rastreamento de Negócios**: Acompanhe os negócios através de várias etapas, incluindo valor, contato e status.
+*   **Gerenciamento de Contatos**: Armazene e gerencie informações de contato, incluindo campos personalizados e histórico de interação.
+*   **Mecanismo de Automação**: Configure ações automatizadas baseadas em eventos de negócios ou tarefas (por exemplo, enviar e-mails, criar tarefas, enviar webhooks, mensagens do WhatsApp).
+*   **Modelos de E-mail**: Crie e gerencie modelos de e-mail reutilizáveis para automações.
+*   **Gerenciamento de Tarefas**: Crie e atribua tarefas, vincule-as a negócios ou contatos e acompanhe a conclusão.
+*   **Notas de Calendário**: Agende e gerencie notas e eventos importantes.
+*   **Gerenciamento de Usuários**: Adicione e remova usuários com acesso à conta do CRM.
+*   **Análise de Painel**: Visualize os principais indicadores de desempenho e a distribuição de negócios.
+*   **Integração SMTP**: Configure as configurações SMTP para envio de e-mails, tanto em nível de sistema quanto por empresa.
+*   **Integração do WhatsApp (Evolution API)**: Conecte-se ao WhatsApp para mensagens automatizadas.
+
+---
+
+## Como Rodar a Aplicação
+
+Existem duas maneiras principais de rodar esta aplicação: para desenvolvimento e para produção.
+
+### Desenvolvimento
+
+Para desenvolvimento, você precisa rodar o servidor de API (backend) e o servidor de desenvolvimento do frontend em **dois terminais separados**. Isso permite funcionalidades como recarregamento instantâneo (hot-reloading) no frontend.
+
+**1. Iniciar o Servidor Backend:**
+
+*   Instale as dependências:
     ```bash
     npm install
     ```
--   **Configure Environment Variables**: Create a `.env` file in the project root with the following (replace with your actual SMTP details):
+*   **Configure as Variáveis de Ambiente**: Crie um arquivo `.env` na raiz do projeto com o seguinte (substitua pelos seus dados SMTP reais):
     ```
-    # Company-specific SMTP settings (can be overridden per company in CRM settings)
-    SMTP_HOST=your_smtp_host
+    # Configurações SMTP específicas da empresa (podem ser substituídas por empresa nas configurações do CRM)
+    SMTP_HOST=seu_servidor_smtp
     SMTP_PORT=587
     SMTP_SECURE=false
-    SMTP_USER=your_smtp_user
-    SMTP_PASS=your_smtp_password
+    SMTP_USER=seu_usuario_smtp
+    SMTP_PASS=sua_senha_smtp
 
-    # System-wide SMTP settings for registration, password reset, etc.
-    # These are used for core CRM functionalities and take precedence over SMTP_HOST/PORT/USER/PASS
-    SYSTEM_SMTP_HOST=your_system_smtp_host
+    # Configurações SMTP em nível de sistema para registro, redefinição de senha, etc.
+    # Estas são usadas para funcionalidades centrais do CRM e têm precedência sobre SMTP_HOST/PORT/USER/PASS
+    SYSTEM_SMTP_HOST=seu_servidor_smtp_sistema
     SYSTEM_SMTP_PORT=587
     SYSTEM_SMTP_SECURE=false
-    SYSTEM_SMTP_USER=your_system_smtp_user
-    SYSTEM_SMTP_PASS=your_system_smtp_password
+    SYSTEM_SMTP_USER=seu_usuario_smtp_sistema
+    SYSTEM_SMTP_PASS=sua_senha_smtp_sistema
 
-    # Other optional environment variables
+    # Outras variáveis de ambiente opcionais
     # PORT=4029
     # DB_FILE=crm.db
     ```
--   Start the API server:
+*   Inicie o servidor de API:
     ```bash
     npm start
     ```
--   The server will start on `http://localhost:4029` and create a `crm.db` file if it doesn't exist. Keep this terminal running.
+*   O servidor será iniciado em `http://localhost:4029` e criará um arquivo `crm.db` se ele não existir. Mantenha este terminal em execução.
 
-**2. Start the Frontend Server:**
+**2. Iniciar o Servidor Frontend:**
 
--   Open a **new terminal** in the same project directory.
--   Install dependencies (if you haven't already):
+*   Abra um **novo terminal** no mesmo diretório do projeto.
+*   Instale as dependências (se ainda não o fez):
     ```bash
     npm install
     ```
--   Start the Vite development server:
+*   Inicie o servidor de desenvolvimento Vite:
     ```bash
     npm run dev
     ```
--   Vite will provide a local URL, typically `http://localhost:5173`. Open this URL in your browser.
+*   O Vite fornecerá uma URL local, tipicamente `http://localhost:5173`. Abra esta URL no seu navegador.
 
-The default login credentials for the initial seeded company are `ADMIN` / `1234`.
+As credenciais de login padrão para a empresa inicial são `ADMIN` / `1234`.
 
 ---
 
-### Production Deployment on Linux
+### Implantação em Produção no Linux
 
-For a production environment, you should build the React application into static files and have a single Node.js server that serves both the API and the frontend.
+Para um ambiente de produção, você deve construir a aplicação React em arquivos estáticos e ter um único servidor Node.js que sirva tanto a API quanto o frontend.
 
-**1. Prerequisites:**
+**1. Pré-requisitos:**
 
--   A Linux server with Node.js and npm installed.
--   Git (for cloning the repository).
+*   Um servidor Linux com Node.js e npm instalados.
+*   Git (para clonar o repositório).
 
-**2. Installation:**
+**2. Instalação:**
 
--   Clone your project repository to the server.
--   Navigate to the project directory and install all dependencies:
+*   Clone o repositório do seu projeto para o servidor.
+*   Navegue até o diretório do projeto e instale todas as dependências:
     ```bash
     npm install
     ```
 
-**3. Configuration (Essential for Email Functionality):**
+**3. Configuração (Essencial para a Funcionalidade de E-mail):**
 
--   **Environment Variables**: Create a `.env` file in the project root with the following (replace with your actual SMTP details):
+*   **Variáveis de Ambiente**: Crie um arquivo `.env` na raiz do projeto com o seguinte (substitua pelos seus dados SMTP reais):
     ```
-    # Company-specific SMTP settings (can be overridden per company in CRM settings)
-    SMTP_HOST=your_smtp_host
+    # Configurações SMTP específicas da empresa (podem ser substituídas por empresa nas configurações do CRM)
+    SMTP_HOST=seu_servidor_smtp
     SMTP_PORT=587
     SMTP_SECURE=false
-    SMTP_USER=your_smtp_user
-    SMTP_PASS=your_smtp_password
+    SMTP_USER=seu_usuario_smtp
+    SMTP_PASS=sua_senha_smtp
 
-    # System-wide SMTP settings for registration, password reset, etc.
-    # These are used for core CRM functionalities and take precedence over SMTP_HOST/PORT/USER/PASS
-    SYSTEM_SMTP_HOST=your_system_smtp_host
+    # Configurações SMTP em nível de sistema para registro, redefinição de senha, etc.
+    # Estas são usadas para funcionalidades centrais do CRM e têm precedência sobre SMTP_HOST/PORT/USER/PASS
+    SYSTEM_SMTP_HOST=seu_servidor_smtp_sistema
     SYSTEM_SMTP_PORT=587
     SYSTEM_SMTP_SECURE=false
-    SYSTEM_SMTP_USER=your_system_smtp_user
-    SYSTEM_SMTP_PASS=your_system_smtp_password
+    SYSTEM_SMTP_USER=seu_usuario_smtp_sistema
+    SYSTEM_SMTP_PASS=sua_senha_smtp_sistema
 
-    # Other optional environment variables
+    # Outras variáveis de ambiente opcionais
     # PORT=4029
     # DB_FILE=crm.db
     ```
-    **Important**: For production, it's highly recommended to set these environment variables directly in your hosting environment (e.g., using `export` commands, a `.env` file managed by your deployment process, or a secrets manager) rather than committing them to version control.
+    **Importante**: Para produção, é altamente recomendável definir essas variáveis de ambiente diretamente em seu ambiente de hospedagem (por exemplo, usando comandos `export`, um arquivo `.env` gerenciado pelo seu processo de implantação ou um gerenciador de segredos) em vez de enviá-las para o controle de versão.
 
-**4. Build the Frontend:**
+**4. Construir o Frontend:**
 
--   Run the build script to compile the React application into an optimized `dist` folder:
+*   Execute o script de construção para compilar a aplicação React em uma pasta `dist` otimizada:
     ```bash
     npm run build
     ```
 
-**5. Start the Production Server:**
+**5. Iniciar o Servidor de Produção:**
 
--   Run the `start` script. This single command will launch the production-ready server, which serves both your API and the compiled frontend.
+*   Execute o script `start`. Este único comando iniciará o servidor pronto para produção, que serve tanto a sua API quanto o frontend compilado.
     ```bash
     npm start
     ```
--   The application will be accessible at `http://<your-server-ip>:<PORT>`.
+*   A aplicação estará acessível em `http://<seu-ip-do-servidor>:<PORT>`.
 
-**6. Process Management (Recommended):**
+**6. Gerenciamento de Processos (Recomendado):**
 
--   To ensure your application runs continuously and restarts automatically if it crashes, use a process manager like **PM2**.
+*   Para garantir que sua aplicação seja executada continuamente e reinicie automaticamente se falhar, use um gerenciador de processos como o **PM2**.
 
--   Install PM2 globally:
+*   Instale o PM2 globalmente:
     ```bash
     npm install -g pm2
     ```
 
--   Start your application with PM2:
+*   Inicie sua aplicação com PM2:
     ```bash
     pm2 start server.js --name "digiyou-crm"
     ```
 
--   To make the application start automatically on server reboot, run:
+*   Para fazer a aplicação iniciar automaticamente na reinicialização do servidor, execute:
     ```bash
     pm2 startup
     ```
-    (This will provide a command you need to copy and run with sudo privileges).
+    (Isso fornecerá um comando que você precisa copiar e executar com privilégios de sudo).
 
--   Save the current process list to be restored on reboot:
+*   Salve a lista de processos atual para ser restaurada na reinicialização:
     ```bash
     pm2 save
     ```
 
--   You can monitor your application with `pm2 list` or `pm2 monit`.
+*   Você pode monitorar sua aplicação com `pm2 list` ou `pm2 monit`.
 
 ---
 
-## Screenshots
+## Testando a Configuração SMTP
 
-### Login Page
+### Desenvolvimento Local
 
-![Login Page](./.playwright-mcp/login-page.png)
+1.  **Configurar `.env`**: Certifique-se de que `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` (para a empresa) e `SYSTEM_SMTP_HOST`, `SYSTEM_SMTP_PORT`, `SYSTEM_SMTP_SECURE`, `SYSTEM_SMTP_USER`, `SYSTEM_SMTP_PASS` (para o sistema) estejam configurados corretamente em seu arquivo `.env`.
+2.  **Iniciar Servidores**: Execute `npm start` (backend) e `npm run dev` (frontend).
+3.  **Testar SMTP do Sistema**:
+    *   Navegue até a página de registro (`/register`). Tente registrar um novo usuário. Se o SMTP do sistema estiver configurado corretamente, você deverá receber um e-mail de verificação.
+    *   Navegue até a página de redefinição de senha (`/forgot-password`). Digite o e-mail de um usuário existente. Se configurado corretamente, você deverá receber um e-mail de redefinição de senha.
+4.  **Testar SMTP Específico da Empresa**:
+    *   Faça login no CRM.
+    *   Vá para "Configurações" -> "Configuração de E-mail (SMTP)".
+    *   Os campos devem ser preenchidos automaticamente a partir de suas variáveis `SMTP_` do `.env`. Você pode modificá-los aqui, se necessário.
+    *   Digite um e-mail de destinatário na seção "Testar Conexão" e clique em "Testar". Você deverá receber um e-mail de teste.
+    *   Crie uma automação que envie um e-mail e ative-a para verificar.
 
-### Pipeline Page
+### Ambiente de Produção
 
-![Pipeline Page](./.playwright-mcp/pipeline-page.png)
-
-### Settings Page
-
-![Settings Page](./.playwright-mcp/settings-page.png)
-
-## Testing SMTP Configuration
-
-### Local Development
-
-1.  **Configure `.env`**: Ensure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` (for company-specific) and `SYSTEM_SMTP_HOST`, `SYSTEM_SMTP_PORT`, `SYSTEM_SMTP_SECURE`, `SYSTEM_SMTP_USER`, `SYSTEM_SMTP_PASS` (for system-wide) are correctly set in your `.env` file.
-2.  **Start Servers**: Run `npm start` (backend) and `npm run dev` (frontend).
-3.  **Test System SMTP**:
-    *   Navigate to the registration page (`/register`). Try to register a new user. If the system SMTP is configured correctly, you should receive a verification email.
-    *   Navigate to the forgot password page (`/forgot-password`). Enter an existing user's email. If configured correctly, you should receive a password reset email.
-4.  **Test Company-Specific SMTP**:
-    *   Log in to the CRM.
-    *   Go to "Settings" -> "Email (SMTP) Configuration".
-    *   The fields should be pre-filled from your `.env` `SMTP_` variables. You can modify them here if needed.
-    *   Enter a recipient email in the "Test Connection" section and click "Test". You should receive a test email.
-    *   Create an automation that sends an email and trigger it to verify.
-
-### Production Environment
-
-1.  **Configure Environment Variables**: Ensure `SYSTEM_SMTP_HOST`, `SYSTEM_SMTP_PORT`, `SYSTEM_SMTP_SECURE`, `SYSTEM_SMTP_USER`, `SYSTEM_SMTP_PASS` and `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` are set in your production environment.
-2.  **Deploy and Start**: Follow the "Production Deployment on Linux" steps to build and start your application.
-3.  **Test System SMTP**:
-    *   Access your deployed CRM's registration page. Register a new user to verify verification email delivery.
-    *   Use the forgot password functionality for an existing user to verify password reset email delivery.
-4.  **Test Company-Specific SMTP**:
-    *   Log in to the deployed CRM.
-    *   Navigate to "Settings" -> "Email (SMTP) Configuration".
-    *   Verify that the fields reflect the `SMTP_` environment variables set in production.
-    *   Send a test email from this section.
-    *   Trigger an email automation to confirm it works.
+1.  **Configurar Variáveis de Ambiente**: Certifique-se de que `SYSTEM_SMTP_HOST`, `SYSTEM_SMTP_PORT`, `SYSTEM_SMTP_SECURE`, `SYSTEM_SMTP_USER`, `SYSTEM_SMTP_PASS` e `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` estejam definidos em seu ambiente de produção.
+2.  **Deploy e Iniciar**: Siga as etapas de "Implantação em Produção no Linux" para construir e iniciar sua aplicação.
+3.  **Testar SMTP do Sistema**:
+    *   Acesse a página de registro do seu CRM implantado. Registre um novo usuário para verificar a entrega do e-mail de verificação.
+    *   Use a funcionalidade de redefinição de senha para um usuário existente para verificar a entrega do e-mail de redefinição de senha.
+4.  **Testar SMTP Específico da Empresa**:
+    *   Faça login no CRM implantado.
+    *   Navegue até "Configurações" -> "Configuração de E-mail (SMTP)".
+    *   Verifique se os campos refletem as variáveis de ambiente `SMTP_` definidas em produção.
+    *   Envie um e-mail de teste a partir desta seção.
+    *   Ative uma automação de e-mail para confirmar que funciona.
