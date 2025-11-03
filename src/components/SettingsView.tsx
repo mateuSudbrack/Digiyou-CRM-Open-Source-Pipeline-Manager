@@ -74,14 +74,14 @@ const UserManagement: React.FC<{ users: UserProfile[], refreshData: () => Promis
 };
 
 const SmtpSettings: React.FC<{ initialConfig: SmtpConfig, refreshData: () => Promise<void>, companyId: string }> = ({ initialConfig, refreshData, companyId }) => {
-    const [config, setConfig] = useState<SmtpConfig>(initialConfig || { host: '', port: 587, secure: false, user: '', pass: '' });
+    const [config, setConfig] = useState<SmtpConfig>(initialConfig || { host: '', port: 0, secure: false, user: '', pass: '' });
     const [testEmail, setTestEmail] = useState('');
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isTesting, setIsTesting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        setConfig(initialConfig || { host: '', port: 587, secure: false, user: '', pass: '' });
+        setConfig(initialConfig || { host: '', port: 0, secure: false, user: '', pass: '' });
     }, [initialConfig]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 import session from 'express-session';
 
@@ -78,19 +81,21 @@ const getInitialData = () => {
       { id: generateId(), name: 'Urgency', companyId: initialCompanyId }
   ];
 
+  const defaultSmtpConfig = process.env.SMTP_HOST ? JSON.stringify({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+  }) : '{}';
+
   return {
     companies: [{
       id: initialCompanyId, 
       name: 'DigiYou CRM (Default)',
       webhookUrl: '', 
       dashboardConfig: defaultDashboardConfig,
-      smtpConfig: {
-        host: "br102.hostgator.com.br",
-        port: 587,
-        secure: false,
-        user: "afiliado@rubricadigital.com.br",
-        pass: "Msc.1235813",
-      },
+      smtpConfig: defaultSmtpConfig,
       evolutionInstanceName: null,
       evolutionApiKey: null,
       evolutionApiUrl: null,
@@ -152,7 +157,7 @@ const initializeDb = async () => {
         const initialData = getInitialData();
         for (const company of initialData.companies) {
             await db.run('INSERT INTO companies (id, name, apiKey, webhookUrl, dashboardConfig, smtpConfig, evolutionInstanceName, evolutionApiKey, evolutionApiUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                company.id, company.name, `api_key_${generateId()}`, company.webhookUrl, JSON.stringify(company.dashboardConfig), JSON.stringify(company.smtpConfig), company.evolutionInstanceName, company.evolutionApiKey, company.evolutionApiUrl);
+                company.id, company.name, `api_key_${generateId()}`, company.webhookUrl, JSON.stringify(company.dashboardConfig), company.smtpConfig, company.evolutionInstanceName, company.evolutionApiKey, company.evolutionApiUrl);
         }
         for (const user of initialData.users) await db.run('INSERT INTO users (username, password, companyId) VALUES (?, ?, ?)', user.username, user.password, user.companyId);
         for (const pipeline of initialData.pipelines) await db.run('INSERT INTO pipelines (id, name, companyId) VALUES (?, ?, ?)', pipeline.id, pipeline.name, pipeline.companyId);
@@ -345,13 +350,22 @@ const getTransporterForCompany = async (companyId) => {
 };
 
 const getSystemTransporter = async () => {
-    const db = await openDb();
-    const company = await db.get('SELECT smtpConfig FROM companies WHERE smtpConfig IS NOT NULL AND smtpConfig != "" LIMIT 1');
-    if (!company || !company.smtpConfig) {
-        console.error("CRITICAL: No SMTP configuration found in any company. Cannot send system emails.");
-        return null;
+    const host = process.env.SYSTEM_SMTP_HOST || process.env.SMTP_HOST;
+    const port = parseInt(process.env.SYSTEM_SMTP_PORT || process.env.SMTP_PORT || '587', 10);
+    const secure = (process.env.SYSTEM_SMTP_SECURE || process.env.SMTP_SECURE) === 'true';
+    const user = process.env.SYSTEM_SMTP_USER || process.env.SMTP_USER;
+    const pass = process.env.SYSTEM_SMTP_PASS || process.env.SMTP_PASS;
+
+    if (!host || !port || !user || !pass) {
+        console.warn("System SMTP not fully configured in environment variables. Falling back to company config if available.");
+        const db = await openDb();
+        const company = await db.get('SELECT smtpConfig FROM companies WHERE smtpConfig IS NOT NULL AND smtpConfig != "" LIMIT 1');
+        if (!company || !company.smtpConfig) {
+            return null;
+        }
+        const companySmtpConfig = JSON.parse(company.smtpConfig);
+        return nodemailer.createTransport({ host: companySmtpConfig.host, port: companySmtpConfig.port, secure: companySmtpConfig.secure, auth: { user: companySmtpConfig.user, pass: companySmtpConfig.pass } });
     }
-    const { host, port, secure, user, pass } = JSON.parse(company.smtpConfig);
     return nodemailer.createTransport({ host, port, secure, auth: { user, pass } });
 };
 
@@ -791,8 +805,16 @@ apiRouter.post('/verify-code', async (req, res) => {
     await db.run('DELETE FROM pendingUsers WHERE username = ?', pendingUser.username);
     
     const newCompanyId = generateId();
+    const defaultSmtpConfig = process.env.SMTP_HOST ? JSON.stringify({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true',
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    }) : '{}';
+
     await db.run('INSERT INTO companies (id, name, apiKey, dashboardConfig, smtpConfig) VALUES (?, ?, ?, ?, ?)',
-        newCompanyId, pendingUser.companyName, `api_key_${generateId()}`, JSON.stringify(defaultDashboardConfig), JSON.stringify(getInitialData().companies[0].smtpConfig));
+        newCompanyId, pendingUser.companyName, `api_key_${generateId()}`, JSON.stringify(defaultDashboardConfig), defaultSmtpConfig);
     await db.run('INSERT INTO users (username, password, companyId) VALUES (?, ?, ?)', pendingUser.username, pendingUser.password, newCompanyId);
 
     res.status(200).json({ message: 'Account verified successfully. You can now log in.' });
