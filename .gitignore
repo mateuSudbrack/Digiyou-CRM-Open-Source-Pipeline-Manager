@@ -30,3 +30,4 @@ db.json
 digiyou-crm/
 test-results/
 .env
+*:Zone.Identifier
