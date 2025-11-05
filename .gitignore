@@ -29,3 +29,4 @@ playwright-test/
 db.json
 digiyou-crm/
 test-results/
+.env
