@@ -477,10 +477,10 @@ const App: React.FC = () => {
     if ('id' in templateData) {
       await crmService.updateEmailTemplate(templateData.id, templateData);
     } else {
-      await crmService.createEmailTemplate(templateData);
+      const newTemplate = await crmService.createEmailTemplate(templateData);
+      setEditingTemplate(newTemplate);
     }
     await fetchData();
-    handleCloseTemplateBuilder();
   };
 
   const handleDeleteTemplate = (templateId: string) => {
@@ -649,6 +649,7 @@ const App: React.FC = () => {
       const templateToEdit = typeof editingTemplate === 'object' ? editingTemplate : null;
       return (
         <EmailTemplateBuilder
+          key={templateToEdit ? templateToEdit.updatedAt : 'new'}
           onSave={handleSaveTemplate}
           onBack={handleCloseTemplateBuilder}
           template={templateToEdit}
