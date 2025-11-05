@@ -474,13 +474,12 @@ const App: React.FC = () => {
   };
 
   const handleSaveTemplate = async (templateData: Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt' | 'companyId'> | EmailTemplate) => {
-    let savedTemplate;
     if ('id' in templateData) {
-      savedTemplate = await crmService.updateEmailTemplate(templateData.id, templateData);
+      await crmService.updateEmailTemplate(templateData.id, templateData);
     } else {
-      savedTemplate = await crmService.createEmailTemplate(templateData);
+      const newTemplate = await crmService.createEmailTemplate(templateData);
+      setEditingTemplate(newTemplate);
     }
-    setEditingTemplate(savedTemplate);
     await fetchData();
   };
 

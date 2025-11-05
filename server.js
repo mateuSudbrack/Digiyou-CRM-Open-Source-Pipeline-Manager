@@ -1239,6 +1239,10 @@ const createCrudEndpoints = (entityName, pluralEntityName, jsonFields = []) => {
         } else if (entityName === 'Automation') {
             await db.run('UPDATE automations SET name=?, triggerType=?, triggerConfig=?, steps=? WHERE id=?',
                 updatedItem.name, updatedItem.triggerType, JSON.stringify(updatedItem.triggerConfig), JSON.stringify(updatedItem.steps), id);
+        } else if (entityName === 'EmailTemplate') {
+            updatedItem.updatedAt = new Date().toISOString();
+            await db.run('UPDATE emailTemplates SET name=?, subject=?, body=?, updatedAt=? WHERE id=?',
+                updatedItem.name, updatedItem.subject, updatedItem.body, updatedItem.updatedAt, id);
         }
         
         if (shouldTriggerAutomation) {
