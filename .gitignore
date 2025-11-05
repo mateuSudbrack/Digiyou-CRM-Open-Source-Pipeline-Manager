@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+crm.db*
+.playwright-mcp/
+playwright-test/
+*.local:Zone.Identifier
+db.json
+digiyou-crm/
+test-results/
