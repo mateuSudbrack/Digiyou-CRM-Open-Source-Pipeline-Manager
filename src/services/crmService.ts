@@ -1,4 +1,4 @@
-import { CrmData, Pipeline, Stage, Deal, Contact, DealStatus, CustomFieldDefinition, DealImportData, Automation, Task, User, CalendarNote, ContactCustomFieldDefinition, UserProfile, DashboardWidget, SmtpConfig, EmailTemplate, DealImportPayload, ScheduledJob } from '../types';
+import { CrmData, Pipeline, Stage, Deal, Contact, DealStatus, CustomFieldDefinition, DealImportData, Automation, Task, User, CalendarNote, ContactCustomFieldDefinition, UserProfile, DashboardWidget, SmtpConfig, EmailTemplate, DealImportPayload, ScheduledJob, CurrentUser, Company } from '../types';
 
 const API_URL = "/api"; // The backend server URL
 
@@ -41,17 +41,29 @@ const apiRequest = async <T>(endpoint: string, options: RequestInit = {}, reques
 
 class CrmApiService {
     // Auth & Users
+    public getSetupStatus(): Promise<{ setupComplete: boolean }> {
+        return apiRequest('/setup/status');
+    }
+
+    public createAdmin(username: string, password: string, companyName: string): Promise<{ message: string }> {
+        return apiRequest('/setup/create-admin', { method: 'POST', body: JSON.stringify({ username, password, companyName }) });
+    }
+
+    public createSuperAdmin(username: string, password: string, name: string): Promise<{ message: string }> {
+        return apiRequest('/setup/create-super-admin', { method: 'POST', body: JSON.stringify({ username, password, name }) });
+    }
+
     public register(username: string, password: string, companyName: string): Promise<{ message: string }> {
         return apiRequest('/register', { method: 'POST', body: JSON.stringify({ username, password, companyName }) });
     }
-    public login(username: string, password: string): Promise<{ username: string; companyId: string; } | null> {
+    public login(username: string, password: string): Promise<CurrentUser | null> {
         return apiRequest('/login', { method: 'POST', body: JSON.stringify({ username, password }) });
     }
     public logout(): Promise<void> {
         return apiRequest('/logout', { method: 'POST' });
     }
 
-    public checkSession(): Promise<{ username: string; companyId: string; } | null> {
+    public checkSession(): Promise<CurrentUser | null> {
         return apiRequest('/check-session', { method: 'GET' });
     }
     public verifyCode(username: string, code: string): Promise<{ message: string }> {
@@ -68,6 +80,14 @@ class CrmApiService {
     public resetPassword(token: string, password: string): Promise<{ message: string }> {
         return apiRequest('/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) });
     }
+    // Creation Code
+    public getCreationCode(): Promise<{ code: string }> {
+        return apiRequest('/settings/creation-code', { method: 'GET' });
+    }
+
+    public updateCreationCode(code: string): Promise<{ message: string }> {
+        return apiRequest('/settings/creation-code', { method: 'PUT', body: JSON.stringify({ code }) });
+    }
     public setCompanyId(id: string | null) {
         console.log('[crmService] Setting companyId:', id);
         companyId = id;
@@ -75,8 +95,39 @@ class CrmApiService {
      public createUser(username: string, password: string): Promise<UserProfile> {
         return apiRequest('/users', { method: 'POST', body: JSON.stringify({ username, password }) });
     }
+    public createUserAsSuperAdmin(username: string, password: string, companyId: string, role: string): Promise<UserProfile> {
+        return apiRequest('/super/users', { method: 'POST', body: JSON.stringify({ username, password, companyId, role }) });
+    }
     public deleteUser(username: string, companyId: string): Promise<void> {
         return apiRequest(`/users/${encodeURIComponent(username)}`, { method: 'DELETE' }, companyId);
+    }
+
+    public updateUser(username: string, updates: { password?: string, role?: string }): Promise<UserProfile> {
+        return apiRequest(`/users/${encodeURIComponent(username)}`, { method: 'PATCH', body: JSON.stringify(updates) });
+    }
+
+    public createCompany(name: string, username: string, password: string): Promise<any> {
+        return apiRequest('/companies', { method: 'POST', body: JSON.stringify({ name, username, password }) });
+    }
+
+    public getCompanies(): Promise<any> {
+        return apiRequest('/companies', { method: 'GET' });
+    }
+
+    public getAllUsers(): Promise<any> {
+        return apiRequest('/users', { method: 'GET' });
+    }
+
+    public getAllUsersForSuperAdmin(): Promise<any> {
+        return apiRequest('/all-users', { method: 'GET' });
+    }
+
+    public deleteCompany(companyId: string): Promise<any> {
+        return apiRequest(`/companies/${companyId}`, { method: 'DELETE' });
+    }
+
+    public updateCompany(companyId: string, updates: { name?: string }): Promise<Company> {
+        return apiRequest(`/companies/${companyId}`, { method: 'PATCH', body: JSON.stringify(updates) });
     }
     // Data
     public getAllData(): Promise<CrmData> {

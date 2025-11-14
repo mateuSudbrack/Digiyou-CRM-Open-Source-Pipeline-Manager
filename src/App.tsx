@@ -25,13 +25,17 @@ import ResetPasswordView from './components/ResetPasswordView';
 import TaskModal from './components/TaskModal';
 import CalendarNoteModal from './components/CalendarNoteModal';
 import ScheduleDealModal from './components/ScheduleDealModal';
+import Modal from './components/Modal';
 import { crmService } from './services/crmService';
-import { CrmData, Deal, Contact, Stage, DealImportData, Automation, Task, CalendarNote, User, DashboardWidget, EmailTemplate, DealImportPayload } from './types';
+import { CrmData, Deal, Contact, Stage, DealImportData, Automation, Task, CalendarNote, User, DashboardWidget, EmailTemplate, DealImportPayload, CurrentUser } from './types';
 
-type View = 'dashboard' | 'pipeline' | 'deals' | 'contacts' | 'automations' | 'settings' | 'api' | 'calendar' | 'todos' | 'templates';
-type CurrentUser = { username: string; companyId: string };
+import AdminDashboard from './components/AdminDashboard';
+import Setup from './components/Setup';
+
+type View = 'dashboard' | 'pipeline' | 'deals' | 'contacts' | 'automations' | 'settings' | 'api' | 'calendar' | 'todos' | 'templates' | 'adminDashboard';
 
 const App: React.FC = () => {
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [view, setView] = useState<View>('dashboard');
   const [data, setData] = useState<CrmData | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -40,6 +44,7 @@ const App: React.FC = () => {
   const [filterValue, setFilterValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
   const [location, setLocation] = useState(window.location.pathname);
 
   // Modal states
@@ -59,6 +64,7 @@ const App: React.FC = () => {
   const [dateForScheduling, setDateForScheduling] = useState<string | null>(null);
   const [currentDateForNewItem, setCurrentDateForNewItem] = useState<string | null>(null);
   const [contactCreationResolver, setContactCreationResolver] = useState<((contact: Contact | null) => void) | null>(null);
+
 
 
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
@@ -128,6 +134,7 @@ const App: React.FC = () => {
           'api': 'api',
           'calendar': 'calendar',
           'todos': 'todos',
+          'admin-dashboard': 'adminDashboard',
       };
       setView(viewMap[path] || 'dashboard');
   }, [location]);
@@ -206,6 +213,7 @@ const App: React.FC = () => {
   }, [fetchContacts, currentUser]);
 
   const handleAuthSuccess = (user: CurrentUser) => {
+    console.log("Authentication successful. Current User:", user);
     crmService.setCompanyId(user.companyId);
     setCurrentUser(user);
   };
@@ -625,10 +633,32 @@ const App: React.FC = () => {
   };
 
 
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const { setupComplete } = await crmService.getSetupStatus();
+        setIsSetupComplete(setupComplete);
+      } catch (error) {
+        console.error('Failed to check setup status:', error);
+      }
+    };
+    checkSetup();
+  }, []);
+
+  const handleSetupComplete = () => {
+    setIsSetupComplete(true);
+  };
+
+  if (!isSetupComplete) {
+    return <Setup onSetupComplete={handleSetupComplete} />;
+  }
+
   const renderContent = () => {
     if (isLoading || !data) {
       return <div className="flex justify-center items-center h-screen"><p className="text-white text-xl">Loading CRM...</p></div>;
     }
+
+
 
     if (editingAutomation) {
         const automationToEdit = typeof editingAutomation === 'object' ? editingAutomation : null;
@@ -728,6 +758,8 @@ const App: React.FC = () => {
         return <SettingsView data={data} refreshData={fetchData} onManagePipelines={() => setIsPipelineManagerModalOpen(true)} onManageStages={handleOpenStageManagerForPipeline} onDeleteCustomField={handleDeleteCustomField} onDeleteContactCustomField={handleDeleteContactCustomField} onDeleteUser={handleDeleteUser}/>;
       case 'api':
         return <ApiView data={data} refreshData={fetchData} companyId={currentUser.companyId} />;
+      case 'adminDashboard':
+        return <AdminDashboard onClose={() => navigate('/dashboard')} currentUser={currentUser} />;
       default:
         return <Dashboard data={data} onSaveLayout={handleSaveDashboardConfig} />;
     }
@@ -751,7 +783,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <Header currentPath={location} navigate={navigate} onLogout={handleLogout} />
+      <Header currentUser={currentUser} data={data} currentPath={location} navigate={navigate} onLogout={handleLogout} onOpenAdminDashboard={() => navigate('/admin-dashboard')} />
       <main>
         {renderContent()}
       </main>
@@ -836,6 +868,7 @@ const App: React.FC = () => {
                 deals={data.deals.filter(d => !d.data_vencimento)}
                 date={dateForScheduling}
             />
+
         </>
       )}
       <ConfirmationModal
