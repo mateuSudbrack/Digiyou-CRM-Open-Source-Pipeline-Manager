@@ -783,7 +783,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <Header currentUser={currentUser} data={data} currentPath={location} navigate={navigate} onLogout={handleLogout} onOpenAdminDashboard={() => navigate('/admin-dashboard')} />
+      <Header currentUser={currentUser} currentPath={location} navigate={navigate} onLogout={handleLogout} onOpenAdminDashboard={() => navigate('/admin-dashboard')} />
       <main>
         {renderContent()}
       </main>

@@ -1,19 +1,16 @@
-
-
 import React, { useState } from 'react';
 import { crmService } from '../services/crmService';
 
 interface AuthProps {
-  onAuthSuccess: (user: { username: string; companyId: string }) => void;
+  onAuthSuccess: (user: { username: string; companyId: string, role: string }) => void;
 }
 
 const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'message' | 'verify'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'message'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [emailForVerification, setEmailForVerification] = useState('');
+  const [creationCode, setCreationCode] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,8 +19,9 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     setUsername('');
     setPassword('');
     setCompanyName('');
-    setVerificationCode('');
+    setCreationCode('');
     setError('');
+    setMessage('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,41 +29,25 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     setError('');
     setIsLoading(true);
     try {
-        if (mode === 'login') {
-            const user = await crmService.login(username, password);
-            if (user) onAuthSuccess(user);
-        } else if (mode === 'register') {
-            if (password.length < 4) throw new Error('Password must be at least 4 characters long.');
-            if (!companyName.trim()) throw new Error('Company name is required.');
-            await crmService.register(username, password, companyName);
-            setEmailForVerification(username);
-            setMode('verify');
-            setPassword('');
-            setCompanyName('');
-        } else if (mode === 'forgot') {
-            const result = await crmService.forgotPassword(username);
-            setMessage(result.message);
-            setMode('message');
-        }
-    } catch (err: any) {
-        setError(err.message || 'An error occurred.');
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-  const handleVerifySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-    try {
-        const result = await crmService.verifyCode(emailForVerification, verificationCode);
+      if (mode === 'login') {
+        const user = await crmService.login(username, password);
+        if (user) onAuthSuccess(user);
+      } else if (mode === 'register') {
+        if (password.length < 4) throw new Error('Password must be at least 4 characters long.');
+        if (!companyName.trim()) throw new Error('Company name is required.');
+        if (!creationCode.trim()) throw new Error('Creation code is required.');
+        const result = await crmService.register(username, password, companyName, creationCode);
         setMessage(result.message);
         setMode('message');
+      } else if (mode === 'forgot') {
+        const result = await crmService.forgotPassword(username);
+        setMessage(result.message);
+        setMode('message');
+      }
     } catch (err: any) {
-        setError(err.message || 'Verification failed.');
+      setError(err.message || 'An error occurred.');
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
   
@@ -73,8 +55,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       if (mode === 'login') return 'Please sign in to continue';
       if (mode === 'register') return 'Create your account';
       if (mode === 'forgot') return 'Reset Your Password';
-      if (mode === 'verify') return 'Check Your Email';
-      return 'Check Your Email';
+      return 'Notification';
   };
 
   if (mode === 'message') {
@@ -94,46 +75,6 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     );
   }
 
-  if (mode === 'verify') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-        <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold">{getTitle()}</h2>
-            <p className="mt-2 text-gray-400">We've sent a 6-digit verification code to <br/><strong>{emailForVerification}</strong></p>
-          </div>
-          <form className="space-y-6" onSubmit={handleVerifySubmit}>
-            <div>
-              <label htmlFor="verificationCode" className="text-sm font-bold text-gray-300 tracking-wide">Verification Code</label>
-              <input 
-                id="verificationCode" 
-                type="text" 
-                value={verificationCode} 
-                onChange={(e) => setVerificationCode(e.target.value)} 
-                className="mt-2 block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-4 text-white text-center text-2xl tracking-[0.5em]"
-                maxLength={6}
-                required 
-              />
-            </div>
-            {error && <p className="text-red-400 text-sm text-center bg-red-500/10 p-2 rounded-md">{error}</p>}
-            <div>
-              <button 
-                type="submit" 
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-bold text-lg transition-colors duration-200 disabled:opacity-50" 
-                disabled={isLoading}
-              >
-                {isLoading ? 'Verifying...' : 'Verify Account'}
-              </button>
-            </div>
-          </form>
-           <div className="text-center text-sm text-gray-400">
-            <p>Didn't get a code? <button onClick={() => { setMode('login'); resetForm(); }} className="font-medium text-blue-400 hover:underline">Go back and try registering again.</button></p>
-           </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
       <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
@@ -145,10 +86,16 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         </div>
         <form className="space-y-6" onSubmit={handleSubmit}>
           {mode === 'register' && (
-            <div>
-              <label htmlFor="companyName" className="text-sm font-bold text-gray-300 tracking-wide">Company Name</label>
-              <input id="companyName" type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="mt-2 block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your Company Inc." required />
-            </div>
+            <>
+              <div>
+                <label htmlFor="companyName" className="text-sm font-bold text-gray-300 tracking-wide">Company Name</label>
+                <input id="companyName" type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="mt-2 block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your Company Inc." required />
+              </div>
+              <div>
+                <label htmlFor="creationCode" className="text-sm font-bold text-gray-300 tracking-wide">Creation Code</label>
+                <input id="creationCode" type="text" value={creationCode} onChange={(e) => setCreationCode(e.target.value)} className="mt-2 block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter invitation code" required />
+              </div>
+            </>
           )}
           
           <div>

@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChartBarIcon, TableCellsIcon, BuildingOfficeIcon, Cog6ToothIcon, ListBulletIcon, BoltIcon, CodeBracketIcon, PlusIcon, CalendarDaysIcon, CheckCircleIcon, ClipboardDocumentListIcon } from './icons';
+import { ChartBarIcon, TableCellsIcon, BuildingOfficeIcon, Cog6ToothIcon, ListBulletIcon, BoltIcon, CodeBracketIcon, PlusIcon, CalendarDaysIcon, CheckCircleIcon, ClipboardDocumentListIcon, UsersIcon } from './icons';
+import { CurrentUser } from '../types';
 
 interface HeaderProps {
+    currentUser: CurrentUser | null;
     currentPath: string;
     navigate: (path: string) => void;
     onLogout: () => void;
+    onOpenAdminDashboard: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPath, navigate, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ currentUser, currentPath, navigate, onLogout, onOpenAdminDashboard }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -110,6 +113,12 @@ const Header: React.FC<HeaderProps> = ({ currentPath, navigate, onLogout }) => {
                                         <span>Tasks</span>
                                     </div>
                                     <div className="border-t border-gray-700 my-1"></div>
+                                    {currentUser?.role === 'superadmin' && (
+                                        <div onClick={onOpenAdminDashboard} className="flex items-center space-x-3 px-4 py-2 text-sm text-yellow-400 hover:bg-gray-700 cursor-pointer">
+                                            <UsersIcon className="h-5 w-5" />
+                                            <span>Admin Console</span>
+                                        </div>
+                                    )}
                                     <div onClick={() => handleNavigation('/settings')} className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer">
                                         <Cog6ToothIcon className="h-5 w-5" />
                                         <span>Settings</span>

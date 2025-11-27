@@ -53,8 +53,8 @@ class CrmApiService {
         return apiRequest('/setup/create-super-admin', { method: 'POST', body: JSON.stringify({ username, password, name }) });
     }
 
-    public register(username: string, password: string, companyName: string): Promise<{ message: string }> {
-        return apiRequest('/register', { method: 'POST', body: JSON.stringify({ username, password, companyName }) });
+    public register(username: string, password: string, companyName: string, creationCode: string): Promise<{ message: string }> {
+        return apiRequest('/register', { method: 'POST', body: JSON.stringify({ username, password, companyName, creationCode }) });
     }
     public login(username: string, password: string): Promise<CurrentUser | null> {
         return apiRequest('/login', { method: 'POST', body: JSON.stringify({ username, password }) });

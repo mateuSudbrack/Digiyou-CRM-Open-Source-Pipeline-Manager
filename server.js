@@ -27,7 +27,7 @@ const __dirname = path.dirname(__filename);
 // --- Database Setup ---
 let db;
 
-const DB_FILE = process.env.DB_FILE || 'crm.db';
+const DB_FILE = process.env.DB_FILE || 'crm_new.db';
 
 const openDb = async () => {
     if (db) return db;
@@ -120,7 +120,7 @@ const getInitialData = () => {
         { id: generateId(), title: 'Prepare Q3 marketing proposal', isCompleted: true, createdAt: new Date().toISOString(), companyId: initialCompanyId },
         { id: generateId(), title: 'Schedule demo with Soluções Tech', isCompleted: false, createdAt: new Date().toISOString(), dueDate: getDateInFuture(7), companyId: initialCompanyId },
     ],
-    users: [ { username: 'ADMIN', password: '1234', companyId: initialCompanyId }],
+    users: [ { username: 'ADMIN', password: '1234', companyId: initialCompanyId, role: 'superadmin' }],
     pendingUsers: [],
     calendarNotes: [
         { id: generateId(), title: 'Team Meeting', content: 'Discuss Q3 goals', date: getDateInFuture(3), createdAt: new Date().toISOString(), companyId: initialCompanyId }
@@ -134,8 +134,8 @@ const initializeDb = async () => {
     const db = await openDb();
     const tables = [
         `CREATE TABLE IF NOT EXISTS companies (id TEXT PRIMARY KEY, name TEXT, apiKey TEXT, webhookUrl TEXT, dashboardConfig TEXT, smtpConfig TEXT, evolutionInstanceName TEXT, evolutionApiKey TEXT, evolutionApiUrl TEXT)`,
-        `CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT NOT NULL, companyId TEXT NOT NULL, resetToken TEXT, resetTokenExpiry INTEGER, FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE)`,
-        `CREATE TABLE IF NOT EXISTS pendingUsers (username TEXT PRIMARY KEY, password TEXT, companyName TEXT, confirmationCode TEXT, tokenExpiry INTEGER)`,
+        `CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT NOT NULL, companyId TEXT NOT NULL, role TEXT, resetToken TEXT, resetTokenExpiry INTEGER, FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE)`,
+        
         `CREATE TABLE IF NOT EXISTS pipelines (id TEXT PRIMARY KEY, name TEXT NOT NULL, companyId TEXT NOT NULL, FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE)`,
         `CREATE TABLE IF NOT EXISTS stages (id TEXT PRIMARY KEY, name TEXT NOT NULL, pipelineId TEXT NOT NULL, "order" INTEGER, companyId TEXT NOT NULL, FOREIGN KEY(pipelineId) REFERENCES pipelines(id) ON DELETE CASCADE)`,
         `CREATE TABLE IF NOT EXISTS contacts (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, phones TEXT, classification TEXT, observation TEXT, notes TEXT, history TEXT, customFields TEXT, attachments TEXT, companyId TEXT NOT NULL, UNIQUE(email, companyId), FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE)`,
@@ -147,9 +147,11 @@ const initializeDb = async () => {
         `CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, title TEXT NOT NULL, isCompleted INTEGER DEFAULT 0, createdAt TEXT, dueDate TEXT, companyId TEXT NOT NULL, contactId TEXT, dealId TEXT, FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE, FOREIGN KEY(dealId) REFERENCES deals(id) ON DELETE CASCADE)`,
         `CREATE TABLE IF NOT EXISTS calendarNotes (id TEXT PRIMARY KEY, title TEXT NOT NULL, content TEXT, date TEXT, createdAt TEXT, companyId TEXT NOT NULL, FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE)`,
         `CREATE TABLE IF NOT EXISTS scheduledJobs (id TEXT PRIMARY KEY, companyId TEXT NOT NULL, dealId TEXT, automationId TEXT, executeAt TEXT, condition TEXT, remainingSteps TEXT, FOREIGN KEY(companyId) REFERENCES companies(id) ON DELETE CASCADE, FOREIGN KEY(automationId) REFERENCES automations(id) ON DELETE CASCADE, FOREIGN KEY(dealId) REFERENCES deals(id) ON DELETE CASCADE)`,
+        `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)`,
     ];
     await Promise.all(tables.map(table => db.exec(table)));
 
+    /*
     // Seed initial data if the database is empty
     const companyCount = await db.get('SELECT COUNT(*) as count FROM companies');
     if (companyCount.count === 0) {
@@ -159,7 +161,7 @@ const initializeDb = async () => {
             await db.run('INSERT INTO companies (id, name, apiKey, webhookUrl, dashboardConfig, smtpConfig, evolutionInstanceName, evolutionApiKey, evolutionApiUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 company.id, company.name, `api_key_${generateId()}`, company.webhookUrl, JSON.stringify(company.dashboardConfig), company.smtpConfig, company.evolutionInstanceName, company.evolutionApiKey, company.evolutionApiUrl);
         }
-        for (const user of initialData.users) await db.run('INSERT INTO users (username, password, companyId) VALUES (?, ?, ?)', user.username, user.password, user.companyId);
+        for (const user of initialData.users) await db.run('INSERT INTO users (username, password, companyId, role) VALUES (?, ?, ?, ?)', user.username, user.password, user.companyId, user.role);
         for (const pipeline of initialData.pipelines) await db.run('INSERT INTO pipelines (id, name, companyId) VALUES (?, ?, ?)', pipeline.id, pipeline.name, pipeline.companyId);
         for (const stage of initialData.stages) await db.run('INSERT INTO stages (id, name, pipelineId, "order", companyId) VALUES (?, ?, ?, ?, ?)', stage.id, stage.name, stage.pipelineId, stage.order, stage.companyId);
         for (const contact of initialData.contacts) await db.run('INSERT INTO contacts (id, name, email, phones, classification, observation, notes, history, customFields, attachments, companyId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -174,6 +176,12 @@ const initializeDb = async () => {
             note.id, note.title, note.content, note.date, note.createdAt, note.companyId);
 
         console.log('Seeding complete.');
+    }
+    */
+
+    const creationCode = await db.get('SELECT value FROM settings WHERE key = ?', 'creationCode');
+    if (!creationCode) {
+        await db.run('INSERT INTO settings (key, value) VALUES (?, ?)', 'creationCode', '');
     }
 };
 
@@ -756,54 +764,35 @@ apiRouter.get('/data', companyScoped, async (req, res) => {
 });
 
 // --- AUTH ---
-apiRouter.post('/register', async (req, res) => {
-    const { username, password, companyName } = req.body;
-    if (!username || !password || !companyName) return res.status(400).json({ message: 'Username, password, and company name are required.' });
-    
+
+apiRouter.get('/all-users', async (req, res) => {
+    // TODO: Add proper superadmin role check here
     const db = await openDb();
-    const existingUser = await db.get('SELECT 1 FROM users WHERE lower(username) = lower(?)', username);
-    const pendingUser = await db.get('SELECT 1 FROM pendingUsers WHERE lower(username) = lower(?)', username);
-    if (existingUser || pendingUser) return res.status(409).json({ message: 'Username already exists.' });
-    const existingCompany = await db.get('SELECT 1 FROM companies WHERE lower(name) = lower(?)', companyName);
-    if (existingCompany) return res.status(409).json({ message: 'A company with this name already exists.' });
-
-    const transporter = await getSystemTransporter();
-    if (!transporter) return res.status(500).json({ message: "Email service is not configured on the server." });
-
-    const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const tokenExpiry = Date.now() + 3600000; // 1 hour
-
-    await db.run('INSERT INTO pendingUsers (username, password, companyName, confirmationCode, tokenExpiry) VALUES (?, ?, ?, ?, ?)', username, password, companyName, confirmationCode, tokenExpiry);
-
-    try {
-        await transporter.sendMail({
-            from: `"DigiYou CRM" <${transporter.options.auth.user}>`, to: username, subject: 'Your DigiYou CRM Verification Code',
-            html: `<p>Welcome! Your verification code is:</p><h2 style="font-size: 24px; letter-spacing: 2px;">${confirmationCode}</h2><p>This code will expire in 1 hour.</p>`
-        });
-        res.status(200).json({ message: 'Registration successful. Please check your email for a verification code.' });
-    } catch (error) {
-        console.error("Failed to send verification email:", error);
-        await db.run('DELETE FROM pendingUsers WHERE username = ?', username);
-        res.status(500).json({ message: 'Failed to send verification email. Please try again later.' });
-    }
+    const users = await db.all('SELECT username, companyId, role FROM users');
+    res.json(users);
 });
 
-apiRouter.post('/verify-code', async (req, res) => {
-    const { username, code } = req.body;
-    if (!username || !code) return res.status(400).json({ message: 'Username and verification code are required.' });
-    
-    const db = await openDb();
-    const pendingUser = await db.get('SELECT * FROM pendingUsers WHERE lower(username) = lower(?)', username);
-    if (!pendingUser) return res.status(400).json({ message: 'No pending registration found for this user.' });
 
-    if (pendingUser.tokenExpiry < Date.now()) {
-        await db.run('DELETE FROM pendingUsers WHERE username = ?', pendingUser.username);
-        return res.status(400).json({ message: 'Expired verification code. Please register again.' });
+apiRouter.get('/companies', async (req, res) => {
+    // TODO: Add proper superadmin role check here
+    const db = await openDb();
+    const companies = await db.all('SELECT * FROM companies');
+    res.json(companies);
+});
+
+apiRouter.post('/setup/create-super-admin', async (req, res) => {
+    const { username, password, name } = req.body;
+    if (!username || !password || !name) {
+        return res.status(400).json({ message: 'Username, password, and name are required.' });
     }
-    if (pendingUser.confirmationCode !== code) return res.status(400).json({ message: 'Invalid verification code.' });
-    
-    await db.run('DELETE FROM pendingUsers WHERE username = ?', pendingUser.username);
-    
+
+    const db = await openDb();
+
+    const companyCount = await db.get('SELECT COUNT(*) as count FROM companies');
+    if (companyCount.count > 0) {
+        return res.status(403).json({ message: 'Setup has already been completed.' });
+    }
+
     const newCompanyId = generateId();
     const defaultSmtpConfig = process.env.SMTP_HOST ? JSON.stringify({
         host: process.env.SMTP_HOST,
@@ -814,11 +803,70 @@ apiRouter.post('/verify-code', async (req, res) => {
     }) : '{}';
 
     await db.run('INSERT INTO companies (id, name, apiKey, dashboardConfig, smtpConfig) VALUES (?, ?, ?, ?, ?)',
-        newCompanyId, pendingUser.companyName, `api_key_${generateId()}`, JSON.stringify(defaultDashboardConfig), defaultSmtpConfig);
-    await db.run('INSERT INTO users (username, password, companyId) VALUES (?, ?, ?)', pendingUser.username, pendingUser.password, newCompanyId);
+        newCompanyId,
+        name,
+        `api_key_${generateId()}`,
+        JSON.stringify(defaultDashboardConfig),
+        defaultSmtpConfig
+    );
 
-    res.status(200).json({ message: 'Account verified successfully. You can now log in.' });
+    await db.run('INSERT INTO users (username, password, companyId) VALUES (?, ?, ?)',
+        username,
+        password,
+        newCompanyId
+    );
+
+    res.status(201).json({ message: 'Super admin created successfully.' });
 });
+
+apiRouter.get('/setup/status', async (req, res) => {
+    const db = await openDb();
+    const companyCount = await db.get('SELECT COUNT(*) as count FROM companies');
+    res.json({ setupComplete: companyCount.count > 0 });
+});
+
+apiRouter.post('/register', async (req, res) => {
+    const { username, password, companyName, creationCode } = req.body;
+    if (!username || !password || !companyName || !creationCode) {
+        return res.status(400).json({ message: 'Username, password, company name, and creation code are required.' });
+    }
+
+    const db = await openDb();
+
+    // Validate the creation code
+    const storedCode = await db.get('SELECT value FROM settings WHERE key = ?', 'creationCode');
+    if (!storedCode || storedCode.value !== creationCode) {
+        return res.status(403).json({ message: 'Invalid creation code.' });
+    }
+
+    const existingUser = await db.get('SELECT 1 FROM users WHERE lower(username) = lower(?)', username);
+    if (existingUser) {
+        return res.status(409).json({ message: 'Username already exists.' });
+    }
+    const existingCompany = await db.get('SELECT 1 FROM companies WHERE lower(name) = lower(?)', companyName);
+    if (existingCompany) {
+        return res.status(409).json({ message: 'A company with this name already exists.' });
+    }
+
+    // If code is valid, create company and user directly
+    const newCompanyId = generateId();
+    const defaultSmtpConfig = process.env.SMTP_HOST ? JSON.stringify({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true',
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    }) : '{}';
+
+    await db.run('INSERT INTO companies (id, name, apiKey, dashboardConfig, smtpConfig) VALUES (?, ?, ?, ?, ?)',
+        newCompanyId, companyName, `api_key_${generateId()}`, JSON.stringify(defaultDashboardConfig), defaultSmtpConfig);
+    
+    await db.run('INSERT INTO users (username, password, companyId) VALUES (?, ?, ?)', username, password, newCompanyId);
+
+    res.status(201).json({ message: 'Account created successfully. You can now log in.' });
+});
+
+
 
 apiRouter.post('/forgot-password', async (req, res) => {
     const { username } = req.body;
@@ -865,7 +913,7 @@ apiRouter.post('/login', async (req, res) => {
     const user = await db.get('SELECT * FROM users WHERE lower(username) = lower(?) AND password = ?', username, password);
     console.log(`[LOGIN] Query result for ${username}:`, user ? 'User found' : 'User not found');
     if (user) {
-        req.session.user = { username: user.username, companyId: user.companyId };
+        req.session.user = { username: user.username, companyId: user.companyId, role: user.role };
         res.json(req.session.user);
     } else {
         res.status(401).json({ message: 'Invalid credentials' });
@@ -881,9 +929,11 @@ apiRouter.post('/logout', (req, res) => {
     });
 });
 
-apiRouter.get('/check-session', (req, res) => {
+apiRouter.get('/check-session', async (req, res) => {
     if (req.session && req.session.user) {
-        res.json(req.session.user);
+        const db = await openDb();
+        const user = await db.get('SELECT role FROM users WHERE username = ?', req.session.user.username);
+        res.json({ ...req.session.user, role: user?.role });
     } else {
         res.status(401).json(null);
     }
@@ -1509,6 +1559,24 @@ apiRouter.post('/evolution/webhook', async (req, res) => {
 
 
 // --- User Management Endpoints ---
+
+// Endpoint to get and set the creation code
+apiRouter.get('/settings/creation-code', async (req, res) => {
+    const db = await openDb();
+    const creationCode = await db.get('SELECT value FROM settings WHERE key = ?', 'creationCode');
+    res.json({ code: creationCode?.value || '' });
+});
+
+apiRouter.put('/settings/creation-code', async (req, res) => {
+    const { code } = req.body;
+    if (typeof code !== 'string') {
+        return res.status(400).json({ message: 'Code must be a string.' });
+    }
+    const db = await openDb();
+    await db.run('UPDATE settings SET value = ? WHERE key = ?', code, 'creationCode');
+    res.status(200).json({ message: 'Creation code updated successfully.' });
+});
+
 apiRouter.post('/users', companyScoped, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password || password.length < 4) return res.status(400).json({ message: 'Username and a password of at least 4 characters are required.' });

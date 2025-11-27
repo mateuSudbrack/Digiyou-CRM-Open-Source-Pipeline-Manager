@@ -17,9 +17,12 @@ export interface User {
     companyId: string;
     resetToken?: string;
     resetTokenExpiry?: number;
+    role: 'superadmin' | 'admin' | 'user';
 }
 
 export type UserProfile = Omit<User, 'password' | 'resetToken' | 'resetTokenExpiry'>;
+
+export type CurrentUser = UserProfile;
 
 export interface ContactNote {
   id: string;

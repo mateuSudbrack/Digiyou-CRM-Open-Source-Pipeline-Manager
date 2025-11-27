@@ -143,3 +143,9 @@ export const ClockIcon: React.FC<IconProps> = ({ className = "h-6 w-6" }) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
     </svg>
 );
+
+export const UsersIcon: React.FC<IconProps> = ({ className = "h-6 w-6" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-2.253-9.541 9.541 0 0 0-2.655-2.446l-3.261-1.631a9.541 9.541 0 0 0-2.446-2.655 9.337 9.337 0 0 0-2.253 4.121 9.38 9.38 0 0 0 .372 2.625M16.5 9.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0zM18.75 10.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z" />
+    </svg>
+);
