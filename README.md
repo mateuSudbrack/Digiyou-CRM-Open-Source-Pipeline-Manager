@@ -1,7 +1,5 @@
 # DigiYou CRM - Gerenciador de Pipeline
 
-Este projeto é um CRM moderno focado em um gerenciador de pipeline estilo Kanban, inspirado no ActiveCampaign. Ele permite o gerenciamento abrangente de funis, etapas e negócios, com análises de painel.
-
 ---
 
 ## Capturas de Tela
@@ -17,23 +15,7 @@ Este projeto é um CRM moderno focado em um gerenciador de pipeline estilo Kanba
 
 ---
 
-## Funcionalidades Principais
 
-- **Gerenciamento de Pipeline**: Crie e gerencie pipelines de vendas com etapas personalizáveis.
-- **Campos Personalizados**: Gerencie campos de contato e negócio de acordo com sua necessidade.
-- **Rastreamento de Negócios**: Acompanhe os negócios através de várias etapas, incluindo valor, contato e status.
-- **Gerenciamento de Contatos**: Armazene e gerencie informações de contato, incluindo campos personalizados e histórico de interação.
-- **Mecanismo de Automação**: Configure ações automatizadas baseadas em eventos (enviar e-mails, criar tarefas, webhooks, mensagens do WhatsApp).
-- **Modelos de E-mail**: Crie e gerencie modelos de e-mail reutilizáveis para automações.
-- **Gerenciamento de Tarefas**: Crie e atribua tarefas, vincule-as a negócios ou contatos e acompanhe a conclusão.
-- **Notas de Calendário**: Agende e gerencie notas e eventos importantes.
-- **Gerenciamento de Usuários**: Adicione e remova usuários com acesso à conta do CRM.
-- **Análise de Painel**: Visualize os principais indicadores de desempenho e a distribuição de negócios.
-- **Integração SMTP**: Configure as configurações SMTP para envio de e-mails, tanto em nível de sistema quanto por empresa.
-- **Integração do WhatsApp**: Conecte-se ao WhatsApp via Evolution API para mensagens automatizadas.
-- **API Completa**: Tudo que você faz no front, pode fazer por API, permitindo automação total do CRM.
-
----
 
 ## Como Rodar a Aplicação
 
